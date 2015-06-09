@@ -53,8 +53,12 @@ class LapisLazuli:
         self.log = logging.getLogger('lapis')
         self.log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        ch.setLevel(logging.INFO)
         self.log.addHandler(ch)
+        if kwargs.get('logfile'):
+            logfile = logging.FileHandler(kwargs['logfile'])
+            logfile.setLevel(logging.DEBUG)
+            self.log.addHandler(os.path.join(get_script_dir(), logfile))
         self.load_plugins()
         self.verify_options()
         self.login()
