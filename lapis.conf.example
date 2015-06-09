@@ -1,0 +1,17 @@
+{
+  "maintainer": "/u/malachite",
+  "useragent": "{name}/{version} by {maintainer}",
+  "plugins_dir": "plugins",
+
+  "reddit_user": "malachite",
+  "reddit_password": "hunter2",
+  "subreddit": "stevenuniverse",
+  "scan_limit": 50,
+  "delay_interval": 30,
+
+  "imgur_app_id": "",
+  "imgur_app_secret": "",
+  "imgur_access_token": "",
+  "imgur_refresh_token": "",
+  "tumblr_api_key": ""
+}
