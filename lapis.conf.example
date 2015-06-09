@@ -1,4 +1,6 @@
 {
+  "logfile": "lapis.log",
+
   "maintainer": "/u/malachite",
   "useragent": "{name}/{version} by {maintainer}",
   "plugins_dir": "plugins",
