@@ -54,7 +54,7 @@ class LapisLazuli:
         self.log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
-        ch.setFormatter('%(levelname)-5s - %(message)s')
+        ch.setFormatter(logging.Formatter('%(levelname)-5s - %(message)s'))
         self.log.addHandler(ch)
         if kwargs.get('logfile'):
             logfile = logging.FileHandler(
