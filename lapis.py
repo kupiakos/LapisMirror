@@ -59,7 +59,10 @@ class LapisLazuli:
             logfile = logging.FileHandler(
                 os.path.join(get_script_dir(), kwargs['logfile']))
             logfile.setLevel(logging.DEBUG)
+            logfile.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)-12s - %(levelname)-5s - %(message)s'))
             self.log.addHandler(logfile)
+        self.log.info(' --- STARTING LAPIS MIRROR --- ')
         self.load_plugins()
         self.verify_options()
         self.login()
@@ -148,10 +151,9 @@ class LapisLazuli:
         text = self.options.get('post_template',
                                 '{links}\n\n---\n^(Lapis Mirror {version})').format(
                                     links=links_display, **self.options)
-
         try:
-            # comment =
             submission.add_comment(text)
+            self.log.info('Replied comment to %s', submission.url)
         except Exception as e:
             self.log.error('Had an error posting to Reddit! Attempting cleanup: ' + str(e))
             try:

@@ -34,8 +34,8 @@ class ImgurPlugin:
 
     def export_submission(self,
                           import_urls,
-                          author='Unknown Author',
-                          source='Unknown Source',
+                          author='an Unknown Author',
+                          source='an Unknown Source',
                           **options):
         description = ('This is a mirror uploaded by LapisMirror, '
                        'originally made by %s, located at %s' %

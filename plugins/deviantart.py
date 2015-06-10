@@ -43,7 +43,7 @@ class DeviantArtPlugin:
 
     def import_submission(self, submission):
         try:
-            if self.regex.match(urlsplit(submission.url).netloc):
+            if self.regex_direct.match(urlsplit(submission.url).netloc):
                 r = Request(submission.url,
                             data=None,
                             headers={'User-Agent': self.useragent})
