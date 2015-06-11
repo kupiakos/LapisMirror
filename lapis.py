@@ -221,7 +221,12 @@ def main():
     with open(config_path) as config_file:
         config = json.load(config_file)
     lapis = LapisLazuli(**config)
-    lapis.scan_submissions()
+    while True:
+        try:
+            lapis.scan_submissions()
+        except Exception as e:
+            lapis.log.error('Error while scanning submission! %s', str(e))
+            lapis = LapisLazuli(**config)
 
 
 if __name__ == '__main__':
