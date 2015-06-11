@@ -25,6 +25,7 @@ import re
 import json
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
+import traceback
 
 
 class TumblrPlugin:
@@ -72,8 +73,8 @@ class TumblrPlugin:
                                    for photo in response['response']['posts'][0]['photos']]
             return data
 
-        except Exception as e:
-            self.log.error(str(e))
+        except Exception:
+            self.log.error(traceback.format_exc())
             return None
 
 

@@ -24,6 +24,7 @@ import logging
 import imgurpython
 import urllib.request
 import urllib.error
+import traceback
 
 
 class ImgurPlugin:
@@ -56,8 +57,8 @@ class ImgurPlugin:
             self.log.debug('An album will be uploaded.')
             try:
                 album = self.client.create_album({'description': description})
-            except Exception as e:
-                self.log.error('Could not create album! %s', str(e))
+            except Exception:
+                self.log.error('Could not create album! %s', traceback.format_exc())
                 return None
             config['album'] = album['deletehash']
             is_album = True
@@ -72,9 +73,9 @@ class ImgurPlugin:
                     results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
                 else:
                     results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
-            except Exception as e:
-                self.log.error('Error uploading! Will attempt to delete uploaded images. %s',
-                               str(e))
+            except Exception:
+                self.log.error('Error uploading! Will attempt to delete uploaded images.\n%s',
+                               traceback.format_exc())
                 for image in images:
                     if not self.delete_export(image['deletehash']):
                         self.log.error('Could not delete image %s, %s',
@@ -84,8 +85,8 @@ class ImgurPlugin:
                     if not self.delete_export(album['deletehash']):
                         self.log.error('Could not delete album %s,%s',
                                        image['id'], image['deletehash'])
-        except Exception as e:
-            self.log.error('Broken exception catch %s', str(e))
+        except Exception:
+            self.log.error('Broken exception catch %s', traceback.format_exc())
             if is_album:
                 self.log.error('Try to delete album!')
                 self.delete_export(album['deletehash'])

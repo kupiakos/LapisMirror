@@ -28,6 +28,7 @@ from urllib.parse import urlsplit
 import requests
 import mimeparse
 import bs4
+import traceback
 
 
 class TinypicPlugin:
@@ -63,9 +64,9 @@ class TinypicPlugin:
             assert image_url
             data['import_urls'] = [image_url]
             return data
-        except Exception as e:
+        except Exception:
             self.log.error('Could not import tinypic URL %s (%s)',
-                           submission.url, str(e))
+                           submission.url, traceback.format_exc())
             return None
 
 

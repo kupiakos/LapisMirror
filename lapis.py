@@ -30,6 +30,7 @@ import itertools
 import logging
 import json
 import time
+import traceback
 
 import praw
 
@@ -155,8 +156,8 @@ class LapisLazuli:
         try:
             submission.add_comment(text)
             self.log.info('Replied comment to %s', submission.url)
-        except Exception as e:
-            self.log.error('Had an error posting to Reddit! Attempting cleanup: ' + str(e))
+        except Exception:
+            self.log.error('Had an error posting to Reddit! Attempting cleanup:\n%s', traceback.format_exc())
             try:
                 for _, export_results in export_table:
                     for export_result in export_results:
@@ -166,8 +167,8 @@ class LapisLazuli:
                                        hasattr(i, 'delete_export')]
                             for match in matched:
                                 match.delete_export(**export_result)
-            except Exception as e:
-                self.log.error('Error while attempting to delete exports: ' + str(e))
+            except Exception:
+                self.log.error('Error while attempting to delete exports:\n%s', traceback.format_exc())
             return
         # TODO: Implement SQLite log
         # submission_id = submission.id
@@ -224,8 +225,8 @@ def main():
     while True:
         try:
             lapis.scan_submissions()
-        except Exception as e:
-            lapis.log.error('Error while scanning submission! %s', str(e))
+        except Exception:
+            lapis.log.error('Error while scanning submission! %s', traceback.format_exc())
             lapis = LapisLazuli(**config)
 
 

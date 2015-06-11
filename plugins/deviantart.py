@@ -25,6 +25,7 @@ import re
 import logging
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urlsplit
+import traceback
 
 from bs4 import BeautifulSoup
 
@@ -92,7 +93,7 @@ class DeviantArtPlugin:
                     self.log.debug('Found full DA image url: %s', full_url)
                     data['import_urls'] = [full_url]
             except Exception as e:
-                self.log.error(str(e))
+                self.log.error(traceback.format_exc())
 
             if 'import_urls' not in data:
                 self.log.debug('No url found for DA image.')
@@ -101,7 +102,7 @@ class DeviantArtPlugin:
             return data
 
         except Exception as e:
-            self.log.error(str(e))
+            self.log.error(traceback.format_exc())
             return None
 
 
