@@ -152,7 +152,7 @@ class LapisLazuli:
         links_display = ''.join(links_display_parts)
         text = self.options.get('post_template',
                                 '{links}\n\n---\n^(Lapis Mirror {version})').format(
-                                    links=links_display, **self.options)
+            links=links_display, **self.options)
         try:
             submission.add_comment(text)
             self.log.info('Replied comment to %s', submission.url)
@@ -170,9 +170,9 @@ class LapisLazuli:
             except Exception:
                 self.log.error('Error while attempting to delete exports:\n%s', traceback.format_exc())
             return
-        # TODO: Implement SQLite log
-        # submission_id = submission.id
-        # comment_id = comment.id
+            # TODO: Implement SQLite log
+            # submission_id = submission.id
+            # comment_id = comment.id
 
     def scan_submissions(self, delay=False):
         done = []
@@ -183,7 +183,7 @@ class LapisLazuli:
                 done.append(submission.id)
                 if delay:
                     input()
-            #  self.log.debug('Waiting before next check')
+            # self.log.debug('Waiting before next check')
             time.sleep(self.options.get('delay_interval', 30))
 
     def verify_options(self):
@@ -211,7 +211,6 @@ def get_script_dir():
 
 
 class LapisError(Exception):
-
     """Good job, you made Lapis cry."""
 
 

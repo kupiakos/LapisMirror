@@ -21,10 +21,11 @@
 # THE SOFTWARE.
 
 import logging
-import imgurpython
 import urllib.request
 import urllib.error
 import traceback
+
+import imgurpython
 
 
 class ImgurPlugin:
@@ -100,6 +101,7 @@ class ImgurPlugin:
         except urllib.error.URLError:
             return False
         return True
+
 
 __plugin__ = ImgurPlugin
 

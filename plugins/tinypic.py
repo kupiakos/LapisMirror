@@ -24,11 +24,11 @@ import logging
 import re
 import html
 from urllib.parse import urlsplit
+import traceback
 
 import requests
 import mimeparse
 import bs4
-import traceback
 
 
 class TinypicPlugin:

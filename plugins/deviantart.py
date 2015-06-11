@@ -40,7 +40,7 @@ class DeviantArtPlugin:
     def read_url(self, url):
         r = Request(url, data=None, headers={'User-Agent': self.useragent})
         with urlopen(r) as u:
-                return u.read().decode('utf-8')
+            return u.read().decode('utf-8')
 
     def import_submission(self, submission):
         try:
@@ -69,8 +69,8 @@ class DeviantArtPlugin:
             data = {'author': response['author_name'],
                     'source': submission.url,
                     'importer_display':
-                    {'header': 'Mirrored deviantArt image by the author "{}":\n\n'.format(
-                        response['author_name'])}}
+                        {'header': 'Mirrored deviantArt image by the author "{}":\n\n'.format(
+                            response['author_name'])}}
             if response['type'] == 'link':
                 data['import_urls'] = [response['fullsize_url']]
                 self.log.debug('Found DA API url %s', data['import_urls'])
