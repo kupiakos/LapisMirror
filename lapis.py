@@ -182,7 +182,7 @@ class LapisLazuli:
                 done.append(submission.id)
                 if delay:
                     input()
-            self.log.debug('Waiting before next check')
+            #  self.log.debug('Waiting before next check')
             time.sleep(self.options.get('delay_interval', 30))
 
     def verify_options(self):
