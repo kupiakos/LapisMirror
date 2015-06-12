@@ -121,7 +121,9 @@ class LapisLazuli:
         self.call_plugin_function('login')
 
     def process_submission(self, submission):
-        self.log.debug('Processing submission permalink:\n%s\nurl: %s',
+        self.log.debug('Processing submission\n'
+                       '        permalink:%s\n'
+                       '        url:      %s',
                        submission.permalink, submission.url)
         if any(comment.author.name == self.options['reddit_user']
                for comment in submission.comments if comment.author):
