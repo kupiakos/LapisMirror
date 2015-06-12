@@ -53,6 +53,9 @@ class LapisLazuli:
         self.options = kwargs
         self.log = logging.getLogger('lapis')
         self.log.setLevel(logging.DEBUG)
+        if self.log.hasHandlers():
+            for handler in self.log.handlers:
+                self.log.removeHandler(handler)
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         ch.setFormatter(logging.Formatter('%(levelname)-5s - %(message)s'))
@@ -120,7 +123,7 @@ class LapisLazuli:
     def process_submission(self, submission):
         self.log.debug('Processing submission "%s"', submission.url)
         if any(comment.author.name == self.options['reddit_user']
-               for comment in submission.comments):
+               for comment in submission.comments if comment.author):
             self.log.debug('Have already commented here--moving on.')
             return
 
