@@ -35,11 +35,63 @@ import traceback
 import praw
 
 __author__ = 'kupiakos'
-__version__ = '0.1'
+__version__ = '0.5'
 
 
 class LapisLazuli:
-    """Lapis Lazuli's Mirror didn't disappear; it just ascended into cyberspace."""
+    """_Lapis Lazuli's Mirror didn't disappear; it just ascended into cyberspace._
+
+    Lapis Mirror imports modules from a plugin directory dynamically and loads them.
+    So far, there are import and export modules.
+
+    ### Importing and Exporting ###
+
+    "Import" means to scrape an image from some site, such as deviantArt, and provide
+    the raw URLs to the medium, as well as some other info as well.
+
+    The data stored in an import info dictionary can be:
+    - author: The name of the author or creator of the medium, if any.
+    - source: Where the medium came from.
+    - import_display: A dictionary with the possible values header and footer.
+    It defines what to put above and below the export links.
+    - import_urls: A list of URLs to be exported. The most important field.
+
+    "Export" means to take an imported image, video, etc., and upload it to a specific
+    site to host as a mirror. This includes sites such as imgur, vid.me, or gyfcat.
+
+    The data stored in an export info dictionary can be:
+    - exporter: The name of the class that exported this. Used for deletion.
+    - link_display: The raw Markup text to represent the link.
+    - delete_info: The information required to delete this image.
+
+    ### The Lapis Process ###
+
+    When `scan_submissions` is called, Lapis processes the last (default 50)
+    Reddit posts and calls `import_submission` for each plugin on the submission.
+    Then, each import_info dictionary is passed to each export. For each import
+    processed on all exports, we bind the list of results with the import display.
+    We are left with a list(dict, list(dict)).
+    In retrospect, OOP may have been simpler.
+
+    ### Creating Plugins ###
+
+    To create a plugin, you must put a python module in the plugins directory.
+    It must have a plugin class, named whatever you please.
+    However, somewhere in the module, usually at the bottom, there must be a special
+    variable `__plugin__` defined, set to the class you would like to be used.
+
+    Plugins should define one or more of these functions to be of any use:
+    - `__init__` - This will be called when Lapis is starting up.
+    - `import_submission` - This is what defines an import module.
+    - `export_submission` - This is what defines an export module.
+    - `delete_export` - This is used to delete uploads already made.
+    - `login` - In case our service needs to perform one login at start.
+    - `verify_options` - Ensure that the configuration contains valid info.
+
+    Generally, plugin functions should accept a kwargs argument to absorb any
+    extraneous options that will inevitably be passed in.
+
+    """
 
     sr = None
     reddit = None
@@ -49,6 +101,11 @@ class LapisLazuli:
     ch = None
 
     def __init__(self, **kwargs):
+        """Initialize the Lapis Lazuli Mirroring System.
+        Will start logging immediately.
+
+        :param kwargs: All configuration options provided from lapis.conf.
+        """
         assert isinstance(kwargs, dict)
         self.options = kwargs
         self.log = logging.getLogger('lapis')
@@ -72,7 +129,22 @@ class LapisLazuli:
         self.verify_options()
         self.login()
 
-    def call_plugin_function(self, func_name, *args, **kwargs):
+    def call_plugin_function(self, func_name: str, *args, **kwargs) -> list:
+        """Call all registered plugins with function <func_name>.
+
+        For example, if you have three proper import plugins, and
+        two proper export plugins::
+            len(call_plugin_function('import_submission', submission)) == 3
+            len(call_plugin_function('export_submission', submission)) == 2
+
+        It is standard for failed imports and exports to return None if they
+        cannot process the given submission.
+
+        :param func_name: The name of the function to call for each plugin.
+        :param args: The positional arguments with which to call the function.
+        :param kwargs: The named arguments with which to call the function.
+        :return: A list of the values returned from the plugins with the function.
+        """
         self.log.debug('Calling %s() on plugins', func_name)
         returns = []
         for plugin in itertools.chain(self.plugins):
@@ -83,11 +155,23 @@ class LapisLazuli:
                 self.log.debug('%s does not have a %s() function', plugin.__class__.__name__, func_name)
         return returns
 
-    def get_submission_by_id(self, sub_id):
+    def get_submission_by_id(self, sub_id: str) -> praw.objects.Submission:
+        """Given a submission ID, load the actual submission object.
+
+        Unused currently.
+
+        :param sub_id: The submission ID
+        :return:
+        """
         url = 'https://www.reddit.com/r/{0}/comments/{1}/_/'.format(self.options['subreddit'], sub_id)
         return self.reddit.get_submission(url=url)
 
-    def load_plugins(self):
+    def load_plugins(self) -> None:
+        """Load all plugins from the plugins directory.
+
+        In order for a module to be interpreted as a plugin, it must
+        define __plugin__ as the plugin class somewhere in the module.
+        """
         self.plugins = []
         if 'plugins_dir' not in self.options:
             self.options['plugins_dir'] = 'plugins'
@@ -112,7 +196,8 @@ class LapisLazuli:
                 self.log.info('Initializing plugin ' + plugin.__name__)
                 self.plugins.append(plugin(**self.options))
 
-    def login(self):
+    def login(self) -> None:
+        """Log into required services, like Reddit."""
         self.log.info('Logging into Reddit...')
         self.reddit = praw.Reddit(user_agent=self.options['user_agent'])
         self.reddit.login(username=self.options['reddit_user'],
@@ -120,7 +205,11 @@ class LapisLazuli:
         self.sr = self.reddit.get_subreddit(self.options['subreddit'])
         self.call_plugin_function('login')
 
-    def process_submission(self, submission):
+    def process_submission(self, submission: praw.objects.Submission) -> None:
+        """Process a single submission, replying with a mirror if needed.
+
+        :param submission: The Reddit submission to process.
+        """
         self.log.debug('Processing submission\n'
                        '        permalink:%s\n'
                        '        url:      %s',
@@ -180,7 +269,11 @@ class LapisLazuli:
             # submission_id = submission.id
             # comment_id = comment.id
 
-    def scan_submissions(self, delay=False):
+    def scan_submissions(self, delay: bool=False) -> None:
+        """Scan the most recent submissions continually.
+
+        :param delay: Whether to delay in-between each submission scanned.
+        """
         done = []
         while True:
             for submission in self.sr.get_new(limit=self.options.get('scan_limit', 50)):
@@ -192,7 +285,8 @@ class LapisLazuli:
             # self.log.debug('Waiting before next check')
             time.sleep(self.options.get('delay_interval', 30))
 
-    def verify_options(self):
+    def verify_options(self) -> None:
+        """Ensure that the provided options supply us with enough information."""
         if 'version' not in self.options:
             self.options['version'] = __version__
         if 'subreddit' not in self.options:
@@ -210,6 +304,7 @@ class LapisLazuli:
 
 
 def get_script_dir():
+    """Try to reliably get the directory of the current script."""
     try:
         return os.path.dirname(__file__)
     except NameError:

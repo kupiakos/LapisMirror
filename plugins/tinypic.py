@@ -29,16 +29,41 @@ import traceback
 import requests
 import mimeparse
 import bs4
+import praw
 
 
 class TinypicPlugin:
-    def __init__(self, useragent, **options):
+    """A tiny import plugin for tinypic
+    """
+
+    def __init__(self, useragent: str, **options):
+        """Initialize the tinypic import API.
+
+        :param useragent: The useragent to use for querying tinypic.
+        :param options: Other options in the configuration. Ignored.
+        """
         self.log = logging.getLogger('lapis.tinypic')
         self.headers = {'User-Agent': useragent}
         self.regex = re.compile(r'^(.*?\.)?tinypic\.com$')
 
-    def import_submission(self, submission):
+    def import_submission(self, submission: praw.objects.Submission) -> dict:
+        """Import a submission from tinypic. Uses raw HTML scraping.
+
+        Because this downloads the page and tries to scrape the HTML,
+        we are at significant risk of the image ID on the DOM changing.
+        Therefore, this plugin is liable to break.
+
+        This function will define the following values in its return data:
+        - author: simply "an anonymous Tinypic user"
+        - source: The url of the submission
+        - importer_display/header
+        - import_urls
+
+        :param submission: A reddit submission to parse.
+        """
         try:
+            # It seems PRAW doesn't unescape the reddit URL.
+            # Tinyurl is the only importer so far that depends on URL parameters.
             url = html.unescape(submission.url)
             if not self.regex.match(urlsplit(url).netloc):
                 return None

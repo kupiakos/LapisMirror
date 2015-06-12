@@ -29,24 +29,55 @@ import imgurpython
 
 
 class ImgurPlugin:
-    def __init__(self, useragent, imgur_app_id, imgur_app_secret, **options):
+    """An Imgur import plugin. This is where the real magic happens.
+
+    Will upload single images and albums of images, animated or not.
+    See https://api.imgur.com/oauth2/addclient for information on
+    getting Imgur API keys.
+    """
+
+    def __init__(self, useragent: str, imgur_app_id: str,
+                 imgur_app_secret: str, **options):
+        """Initialize the Imgur export API.
+
+        :param useragent: The useragent to use for the Imgur API.
+        :param imgur_app_id: The app id to use for the Imgur API.
+        :param imgur_app_secret: The app secret to use for the Imgur API.
+        :param options:
+        :return:
+        """
         self.log = logging.getLogger('lapis.imgur')
         self.useragent = useragent
         self.client = imgurpython.ImgurClient(imgur_app_id, imgur_app_secret)
 
     def export_submission(self,
-                          import_urls,
-                          author='an Unknown Author',
-                          source='an Unknown Source',
-                          **options):
+                          import_urls: list,
+                          author: str='an Unknown Author',
+                          source: str='an Unknown Source',
+                          **import_info) -> dict:
+        """Upload one or multiple images to Imgur. Cannot support videos.
+
+        Uses the imgurpython library.
+
+        This function will define the following values in the export data:
+        - exporter
+        - link_display
+
+        :param import_urls: A set of direct links to images to upload.
+        :param author: The author to note in the description.
+        :param source: The source to note in the description.
+        :param import_info: Other importing information passed. Ignored.
+        :return: None if no export, an export info dictionary otherwise.
+        """
         description = ('This is a mirror uploaded by LapisMirror, '
                        'originally made by %s, located at %s' %
                        (author, source))
-        results = {'exporter': 'ImgurPlugin'}
+        results = {'exporter': self.__class__.__name__}
         config = {}
         album = {}
         image = {}
 
+        # Should we do an album?
         if len(import_urls) == 0:
             self.log.warning('An import gave no urls.')
             return None
@@ -65,6 +96,7 @@ class ImgurPlugin:
             is_album = True
 
         try:
+            # Try to upload each image given.
             images = []
             try:
                 for import_url in import_urls:
@@ -77,6 +109,7 @@ class ImgurPlugin:
                 else:
                     results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
             except Exception:
+                # If we fail, we have to try to clean up what we've already uploaded.
                 self.log.error('Error uploading! Will attempt to delete uploaded images.\n%s',
                                traceback.format_exc())
                 for image in images:
@@ -97,7 +130,8 @@ class ImgurPlugin:
         return results
 
     @staticmethod
-    def delete_export(delete_info):
+    def delete_export(delete_info: str) -> bool:
+        """Will delete an export if given the image deletehash"""
         try:
             urllib.request.urlopen('http://api.imgur.com/2/delete/' + delete_info)
         except urllib.error.URLError:

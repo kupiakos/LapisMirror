@@ -26,23 +26,54 @@ import logging
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urlsplit
 import traceback
-
+import praw
 from bs4 import BeautifulSoup
 
 
 class DeviantArtPlugin:
-    def __init__(self, useragent, **options):
+    """A deviantArt import plugin.
+
+    Supports GIFs and single images.
+    Will try to seek out the best possible image if it can be done.
+    Ignores Flash media.
+    """
+
+    def __init__(self, useragent: str, **options):
+        """Initialize the deviantArt import API.
+
+        :param useragent: The useragent to use for the deviantArt API
+        :param options: Other options in the configuration. Ignored.
+        """
         self.log = logging.getLogger('lapis.da')
         self.regex = re.compile(r'^(.*?\.)?((deviantart\.(com|net))|(fav\.me))$')
         self.regex_direct = re.compile(r'^(www\.)?(deviantart\.net)$')
         self.useragent = useragent
 
-    def read_url(self, url):
+    def read_url(self, url: str) -> str:
+        """Download text from a URL.
+
+        :param url: The URL to download from.
+        :return: The data downloaded, parsed using UTF-8.
+        """
         r = Request(url, data=None, headers={'User-Agent': self.useragent})
         with urlopen(r) as u:
             return u.read().decode('utf-8')
 
-    def import_submission(self, submission):
+    def import_submission(self, submission: praw.objects.Submission) -> dict:
+        """Import a submission from deviantArt. Ignores flash content.
+
+        Uses a combination of the DA backend and HTML scraping.
+
+        This function will define the following values in its return data:
+        - author: The author of the image.
+        - source: The submission URL.
+        - importer_display/header
+        - import_urls
+
+
+        :param submission: A reddit submission to parse.
+        :return: None if no import, an import info dictionary otherwise.
+        """
         try:
             if self.regex_direct.match(urlsplit(submission.url).netloc):
                 r = Request(submission.url,
