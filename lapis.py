@@ -121,7 +121,8 @@ class LapisLazuli:
         self.call_plugin_function('login')
 
     def process_submission(self, submission):
-        self.log.debug('Processing submission "%s"', submission.url)
+        self.log.debug('Processing submission permalink:\n%s\nurl: %s',
+                       submission.permalink, submission.url)
         if any(comment.author.name == self.options['reddit_user']
                for comment in submission.comments if comment.author):
             self.log.debug('Have already commented here--moving on.')
@@ -131,7 +132,7 @@ class LapisLazuli:
         if not any(import_results):
             self.log.debug('No processing done on "%s"', submission.url)
             return
-        self.log.info('Imported data from submission "%s"', submission.url)
+        self.log.info('\nImported data from submission "%s"', submission.url)
         export_table = []
         for import_info in filter(None, import_results):
             self.log.debug('Import info: %s', str(import_results))
