@@ -325,6 +325,10 @@ def main():
     while True:
         try:
             lapis.scan_submissions()
+        except LapisError:
+            # LapisError happens when there's something configured wrong,
+            # or a critical error occurs. We should leave the program.
+            break
         except Exception:
             lapis.log.error('Error while scanning submission! %s', traceback.format_exc())
             lapis = LapisLazuli(**config)
