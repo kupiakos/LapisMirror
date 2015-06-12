@@ -26,6 +26,7 @@ import json
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 import traceback
+import bs4
 
 
 class TumblrPlugin:
@@ -72,6 +73,9 @@ class TumblrPlugin:
             data['import_urls'] = [photo['original_size']['url']
                                    for photo in
                                    response['response']['posts'][0].get('photos', [])]
+            if not data['import_urls']:
+                bs = bs4.BeautifulSoup(response['response']['posts'][0].get('body'))
+                data['import_urls'] = [img['src'] for img in bs.select('img')]
             return data
 
         except Exception:
