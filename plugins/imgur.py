@@ -69,7 +69,9 @@ class ImgurPlugin:
             try:
                 for import_url in import_urls:
                     self.log.debug('Uploading URL "%s" to imgur', import_url)
-                    images.append(self.client.upload_from_url(import_url, config))
+                    image = self.client.upload_from_url(import_url, config)
+                    self.log.debug('Uploaded image: %s', str(image))
+                    images.append(image)
                 if is_album:
                     results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
                 else:
