@@ -161,7 +161,7 @@ class LapisLazuli:
             links=links_display, **self.options)
         try:
             submission.add_comment(text)
-            self.log.info('Replied comment to %s', submission.url)
+            self.log.info('Replied comment to %s', submission.permalink)
         except Exception:
             self.log.error('Had an error posting to Reddit! Attempting cleanup:\n%s', traceback.format_exc())
             try:
