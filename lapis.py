@@ -132,7 +132,7 @@ class LapisLazuli:
         if not any(import_results):
             self.log.debug('No processing done on "%s"', submission.url)
             return
-        self.log.info('\nImported data from submission "%s"', submission.url)
+        self.log.info('\n\nImported data from submission "%s"', submission.url)
         export_table = []
         for import_info in filter(None, import_results):
             self.log.debug('Import info: %s', str(import_results))

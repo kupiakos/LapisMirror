@@ -70,7 +70,8 @@ class TumblrPlugin:
             data['importer_display']['header'] = \
                 'Mirrored post from the tumblr blog "{}":\n\n'.format(data['author'])
             data['import_urls'] = [photo['original_size']['url']
-                                   for photo in response['response']['posts'][0]['photos']]
+                                   for photo in
+                                   response['response']['posts'][0].get('photos', [])]
             return data
 
         except Exception:
