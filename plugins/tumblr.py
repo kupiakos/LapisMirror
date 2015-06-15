@@ -114,14 +114,36 @@ class TumblrPlugin:
                                    for photo in
                                    response['response']['posts'][0].get('photos', [])]
 
-            # There are strange cases in which the URLs will not be provided by the Tumblr
-            # API, but it will still return the HTML body that contains the links.
-            # I *think* this happens when there are inline pictures. *shrugs*
+            # In the case that the author opts to just do a text post with inline images,
+            # we can capture that as well. Sometimes authors do this without even knowing.
+            # However, we may capture extraneous images. I've opted to let this happen
+            # anyways. [](#su-dealwithit)
             if not data['import_urls']:
-                bs = bs4.BeautifulSoup(response['response']['posts'][0].get('body'))
+                bs = bs4.BeautifulSoup(response['response']['posts'][0].get('body', ''))
                 data['import_urls'] = [img['src'] for img in bs.select('img')]
                 if not data['import_urls']:
+                    self.log.info('Could not find any URLs to import!')
                     return None
+            else:
+                try:
+                    # It is not uncommon for certain blog posts with many images
+                    # to exceed the technical Tumblr maximum of 10 images in a photoset.
+                    # They usually do this by inserting inline images into their caption.
+                    # This scans the caption's HTML and extracts non-duplicated images.
+                    # It's already been downloaded anyways.
+                    # In the case that an extra images is copied, no harm no foul;
+                    # it's better for more data to be captured than less.
+                    bs = bs4.BeautifulSoup(response['response']['posts'][0].get(
+                        'caption', ''))
+                    other_urls = [img['src']
+                                  for img in bs.find_all('img')
+                                  if img['src'] not in data['import_urls']]
+                    self.log.debug('Found %d additional images in the caption',
+                                   len(other_urls))
+                    data['import_urls'].extend(other_urls)
+                except Exception:
+                    self.log.warning('Ran into problem finding additional URLs: %s',
+                                     traceback.format_exc())
             return data
 
         except Exception:
