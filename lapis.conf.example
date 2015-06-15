@@ -1,8 +1,8 @@
 {
   "logfile": "lapis.log",
 
-  "maintainer": "/u/malachite",
-  "useragent": "{name}/{version} by {maintainer}",
+  "maintainer": "malachite",
+  "useragent": "{name}/{version} by /u/{maintainer}",
   "plugins_dir": "plugins",
 
   "reddit_user": "malachite",
