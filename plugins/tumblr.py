@@ -58,6 +58,7 @@ class TumblrPlugin:
             r'^https?://([a-z0-9\-]+\.tumblr\.com)/(?:post|image)/(\d+)(?:/.*)?$',
             re.IGNORECASE)
         self.api_key = tumblr_api_key
+        self.headers = {'User-Agent': self.useragent}
 
     def read_url(self, url: str) -> str:
         """Download text from a URL.
