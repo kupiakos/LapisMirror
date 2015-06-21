@@ -23,9 +23,11 @@
 import json
 import re
 import logging
-from urllib.request import Request, urlopen
 from urllib.parse import urlencode, urlsplit
 import traceback
+
+import mimeparse
+import requests
 import praw
 from bs4 import BeautifulSoup
 
@@ -48,16 +50,15 @@ class DeviantArtPlugin:
         self.regex = re.compile(r'^(.*?\.)?((deviantart\.(com|net))|(fav\.me))$')
         self.regex_direct = re.compile(r'^(www\.)?(deviantart\.net)$')
         self.useragent = useragent
+        self.headers = {'User-Agent': self.useragent}
 
     def read_url(self, url: str) -> str:
         """Download text from a URL.
 
         :param url: The URL to download from.
-        :return: The data downloaded, parsed using UTF-8.
+        :return: The data downloaded, as a Unicode string.
         """
-        r = Request(url, data=None, headers={'User-Agent': self.useragent})
-        with urlopen(r) as u:
-            return u.read().decode('utf-8')
+        return requests.get(url, headers=self.headers).text
 
     def import_submission(self, submission: praw.objects.Submission) -> dict:
         """Import a submission from deviantArt. Ignores flash content.
@@ -76,13 +77,12 @@ class DeviantArtPlugin:
         """
         try:
             if self.regex_direct.match(urlsplit(submission.url).netloc):
-                r = Request(submission.url,
-                            data=None,
-                            headers={'User-Agent': self.useragent})
-                with urlopen(r) as u:
-                    if u.headers['content-type'].startswith('image'):
-                        self.log.debug('DA link is a direct image')
-                        return submission.url
+                r = requests.head(submission.url, headers=self.headers)
+                mime_text = r.headers.get('Content-Type')
+                mime = mimeparse.parse_mime_type(mime_text)
+                if mime[0] == 'image':
+                    self.log.debug('DA link is a direct image')
+                    return submission.url
             if not self.regex.match(urlsplit(submission.url).netloc):
                 return None
             query_url = 'http://backend.deviantart.com/oembed?{}'.format(
@@ -117,6 +117,7 @@ class DeviantArtPlugin:
                 if is_flash or is_madefire:
                     self.log.info('DA url is flash, no preview needed.')
                     return None
+                # Seems to alternate between the two
                 full_view = (bs.select('img[class~=fullview]') or
                              bs.select('img[class~=dev-content-full]'))
                 if full_view:

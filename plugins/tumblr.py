@@ -23,11 +23,12 @@
 import logging
 import re
 import json
-from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 import traceback
+
 import bs4
 import praw
+import requests
 
 
 class TumblrPlugin:
@@ -62,11 +63,9 @@ class TumblrPlugin:
         """Download text from a URL.
 
         :param url: The URL to download from.
-        :return: The data downloaded, parsed using UTF-8.
+        :return: The data downloaded, as a Unicode string.
         """
-        r = Request(url, data=None, headers={'User-Agent': self.useragent})
-        with urlopen(r) as u:
-            return u.read().decode('utf-8')
+        return requests.get(url, headers=self.headers).text
 
     def import_submission(self, submission: praw.objects.Submission) -> dict:
         """Import a submission from Tumblr. Does not parse videos yet.
