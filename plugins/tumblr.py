@@ -44,7 +44,7 @@ class TumblrPlugin:
 
     api_key = None
 
-    def __init__(self, useragent: str, tumblr_api_key: str, **options):
+    def __init__(self, useragent: str, tumblr_api_key: str='', **options):
         """Initialize the Tumblr import API.
 
         :param useragent: The useragent to use for the Tumblr API.
@@ -82,6 +82,8 @@ class TumblrPlugin:
         :param submission: A reddit submission to parse.
         :return: None if no import, an import info dictionary otherwise.
         """
+        if not self.api_key:
+            return None
         try:
             match = self.regex.match(submission.url)
             if not match:
@@ -108,8 +110,12 @@ class TumblrPlugin:
             data['importer_display']['header'] = \
                 'Mirrored post from the tumblr blog "{}":\n\n'.format(data['author'])
 
-            # In the cases of a video, the post object will not have a photos entry.
-            # We should silently fail.
+            video_url = response['response']['posts'][0].get('video_url')
+            if video_url:
+                data['video'] = True
+                data['import_urls'] = [video_url]
+                return data
+
             data['import_urls'] = [photo['original_size']['url']
                                    for photo in
                                    response['response']['posts'][0].get('photos', [])]
@@ -147,7 +153,7 @@ class TumblrPlugin:
             return data
 
         except Exception:
-            self.log.error(traceback.format_exc())
+            self.log.error('Error in tumlbr: %s', traceback.format_exc())
             return None
 
 

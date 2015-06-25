@@ -29,31 +29,39 @@ import imgurpython
 
 
 class ImgurPlugin:
-    """An Imgur import plugin. This is where the real magic happens.
+    """An Imgur export plugin. This is where the real magic happens.
 
     Will upload single images and albums of images, animated or not.
     See https://api.imgur.com/oauth2/addclient for information on
     getting Imgur API keys.
     """
+    client = None
 
-    def __init__(self, useragent: str, imgur_app_id: str,
-                 imgur_app_secret: str, **options):
+    def __init__(self, useragent: str, imgur_app_id: str='',
+                 imgur_app_secret: str='', **options):
         """Initialize the Imgur export API.
 
         :param useragent: The useragent to use for the Imgur API.
         :param imgur_app_id: The app id to use for the Imgur API.
         :param imgur_app_secret: The app secret to use for the Imgur API.
-        :param options:
-        :return:
+        :param options: Other passed options. Unused.
         """
         self.log = logging.getLogger('lapis.imgur')
         self.useragent = useragent
-        self.client = imgurpython.ImgurClient(imgur_app_id, imgur_app_secret)
+        self.app_id = imgur_app_id
+        self.app_secret = imgur_app_secret
+
+    def login(self):
+        """Attempt to log into the Imgur API."""
+        self.log.info('Logging into imgur...')
+        self.client = imgurpython.ImgurClient(
+            self.app_id, self.app_secret)
 
     def export_submission(self,
                           import_urls: list,
                           author: str='an Unknown Author',
                           source: str='an Unknown Source',
+                          video: bool=False,
                           **import_info) -> dict:
         """Upload one or multiple images to Imgur. Cannot support videos.
 
@@ -66,10 +74,16 @@ class ImgurPlugin:
         :param import_urls: A set of direct links to images to upload.
         :param author: The author to note in the description.
         :param source: The source to note in the description.
+        :param video: Whether the imported data is a video or not.
         :param import_info: Other importing information passed. Ignored.
         :return: None if no export, an export info dictionary otherwise.
         """
-        description = ('This is a mirror uploaded by LapisMirror, '
+        # imgur does not support videos.
+        if not self.client:
+            return None
+        if video:
+            return None
+        description = ('This is a mirror uploaded by /u/LapisMirror, '
                        'originally made by %s, located at %s' %
                        (author, source))
         results = {'exporter': self.__class__.__name__}

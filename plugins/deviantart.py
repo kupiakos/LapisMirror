@@ -88,6 +88,7 @@ class DeviantArtPlugin:
             query_url = 'http://backend.deviantart.com/oembed?{}'.format(
                 urlencode({'format': 'json', 'url': submission.url}))
             self.log.debug('%s is valid DA url.', submission.url)
+            self.log.debug('Querying DA API %s', query_url)
 
             response = json.loads(self.read_url(query_url))
 
@@ -134,7 +135,7 @@ class DeviantArtPlugin:
             return data
 
         except Exception as e:
-            self.log.error(traceback.format_exc())
+            self.log.error('Deviantart Error: %s', traceback.format_exc())
             return None
 
 

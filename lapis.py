@@ -148,11 +148,21 @@ class LapisLazuli:
         self.log.debug('Calling %s() on plugins', func_name)
         returns = []
         for plugin in itertools.chain(self.plugins):
-            if hasattr(plugin, func_name):
-                self.log.debug('Calling %s.%s()', plugin.__class__.__name__, func_name)
-                returns.append(getattr(plugin, func_name)(*args, **kwargs))
-            else:
-                self.log.debug('%s does not have a %s() function', plugin.__class__.__name__, func_name)
+            display_name = '%s.%s()' % (plugin.__class__.__name__, func_name)
+            try:
+                if hasattr(plugin, func_name):
+                    # self.log.debug('Calling %s', display_name)
+                    import_data = getattr(plugin, func_name)(*args, **kwargs)
+                    if import_data:
+                        self.log.info('Successfully imported data from %s.%s()',
+                                      plugin.__class__.__name__, func_name)
+                        returns.append(import_data)
+                # else:
+                #     self.log.debug('%s does not have a display_name() function',
+                #                    plugin.__class__.__name__, func_name)
+            except Exception:
+                self.log.error('Error occurred while calling %s:\n%s',
+                               display_name, traceback.format_exc())
         return returns
 
     def get_submission_by_id(self, sub_id: str) -> praw.objects.Submission:
@@ -199,7 +209,7 @@ class LapisLazuli:
     def login(self) -> None:
         """Log into required services, like Reddit."""
         self.log.info('Logging into Reddit...')
-        self.reddit = praw.Reddit(user_agent=self.options['user_agent'])
+        self.reddit = praw.Reddit(user_agent=self.options['useragent'])
         self.reddit.login(username=self.options['reddit_user'],
                           password=self.options['reddit_password'])
         self.sr = self.reddit.get_subreddit(self.options['subreddit'])
@@ -297,9 +307,10 @@ class LapisLazuli:
             raise LapisError('You must define a password!')
         if 'maintainer' not in self.options:
             raise LapisError('You must define a maintainer!')
-        if 'user_agent' not in self.options:
-            self.options['user_agent'] = '{name}/{version} by {maintainer}'.format(
-                name='LapisMirror', **self.options)
+        self.options['useragent'] = self.options.get(
+            'useragent', '{name}/{version} by {maintainer}'
+        ).format(name='LapisMirror', **self.options)
+
         self.call_plugin_function('verify_options', self.options)
 
 
