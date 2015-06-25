@@ -13,7 +13,8 @@
 
   "imgur_app_id": "",
   "imgur_app_secret": "",
-  "imgur_access_token": "",
-  "imgur_refresh_token": "",
-  "tumblr_api_key": ""
+  "tumblr_api_key": "",
+
+  "vidme_user": "",
+  "vidme_password": ""
 }
