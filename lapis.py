@@ -168,6 +168,21 @@ class LapisLazuli:
                                display_name, traceback.format_exc())
         return returns
 
+    def forward_reply(self, item):
+        try:
+            item.mark_as_read()
+            response = '{}{}'.format(
+                item.body,
+                '  \n[Context]({})'.format(item.context)
+                if hasattr(item, 'context') else '')
+            self.log.info('Forwarding a reply from {}:  \n{}'.format(
+                item.author.name, item.body))
+            self.reddit.send_message('kupiakos',
+                                     'Lapis_Mirror forward from {}'.format(item.author.name),
+                                     response)
+        except (AttributeError, praw.errors.PRAWException):
+            pass
+
     def get_submission_by_id(self, sub_id: str) -> praw.objects.Submission:
         """Given a submission ID, load the actual submission object.
 
@@ -310,6 +325,9 @@ class LapisLazuli:
         """
         done = []
         while True:
+            if self.options.get('forward_replies'):
+                for item in self.reddit.get_unread():
+                    self.forward_reply(item)
             for submission in self.sr.get_new(limit=self.options.get('scan_limit', 50)):
                 if submission.id not in done:
                     self.process_submission(submission)
