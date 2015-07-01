@@ -99,6 +99,9 @@ class LapisLazuli:
     plugins = None
     log = None
     ch = None
+    use_oauth = False
+    access_information = None
+    username = None
 
     def __init__(self, **kwargs):
         """Initialize the Lapis Lazuli Mirroring System.
@@ -210,10 +213,31 @@ class LapisLazuli:
         """Log into required services, like Reddit."""
         self.log.info('Logging into Reddit...')
         self.reddit = praw.Reddit(user_agent=self.options['useragent'])
-        self.reddit.login(username=self.options['reddit_user'],
-                          password=self.options['reddit_password'])
+        if self.use_oauth:
+            self.oauth_authorize()
+        else:
+            self.username = self.options['reddit_user']
+            self.reddit.login(username=self.username,
+                              password=self.options['reddit_password'])
         self.sr = self.reddit.get_subreddit(self.options['subreddit'])
         self.call_plugin_function('login')
+
+    def oauth_authorize(self):
+        oauth = self.options['reddit_oauth']
+        self.reddit.set_oauth_app_info(client_id=oauth['client_id'],
+                                       client_secret=oauth['client_secret'],
+                                       redirect_uri=oauth['redirect_uri'])
+        self.access_information = {
+            'access_token': oauth['access_token'],
+            'refresh_token': oauth['refresh_token'],
+            'scope': oauth['scope']
+        }
+        self.oauth_refresh()
+        self.username = self.reddit.get_me().name
+
+    def oauth_refresh(self):
+        self.access_information = self.reddit.refresh_access_information(
+            refresh_token=self.access_information['refresh_token'])
 
     def process_submission(self, submission: praw.objects.Submission) -> None:
         """Process a single submission, replying with a mirror if needed.
@@ -224,7 +248,7 @@ class LapisLazuli:
                        '        permalink:%s\n'
                        '        url:      %s',
                        submission.permalink, submission.url)
-        if any(comment.author.name == self.options['reddit_user']
+        if any(comment.author.name == self.username
                for comment in submission.comments if comment.author):
             self.log.debug('Have already commented here--moving on.')
             return
@@ -294,6 +318,8 @@ class LapisLazuli:
                     input()
             # self.log.debug('Waiting before next check')
             time.sleep(self.options.get('delay_interval', 30))
+            if self.use_oauth:
+                self.oauth_refresh()
 
     def verify_options(self) -> None:
         """Ensure that the provided options supply us with enough information."""
@@ -301,10 +327,22 @@ class LapisLazuli:
             self.options['version'] = __version__
         if 'subreddit' not in self.options:
             raise LapisError('You must define a subreddit!')
-        if 'reddit_user' not in self.options:
-            raise LapisError('You must define a user!')
-        if 'reddit_password' not in self.options:
-            raise LapisError('You must define a password!')
+        if 'reddit_oauth' in self.options:
+            oauth = self.options['reddit_oauth']
+            if not all(oauth.get(k)
+                       for k in ('client_id',
+                                 'client_secret',
+                                 'redirect_uri',
+                                 'access_token',
+                                 'refresh_token',
+                                 'scope')):
+                raise LapisError('You are missing a reddit oauth option!')
+            self.use_oauth = True
+        else:
+            if 'reddit_user' not in self.options:
+                raise LapisError('You must define a user!')
+            if 'reddit_password' not in self.options:
+                raise LapisError('You must define a password!')
         if 'maintainer' not in self.options:
             raise LapisError('You must define a maintainer!')
         self.options['useragent'] = self.options.get(
@@ -342,6 +380,7 @@ def main():
             break
         except Exception:
             lapis.log.error('Error while scanning submission! %s', traceback.format_exc())
+            time.sleep(10)
             lapis = LapisLazuli(**config)
 
 

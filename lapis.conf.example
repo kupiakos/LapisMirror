@@ -5,8 +5,15 @@
   "useragent": "{name}/{version} by /u/{maintainer}",
   "plugins_dir": "plugins",
 
-  "reddit_user": "malachite",
-  "reddit_password": "hunter2",
+  "reddit_oauth": {
+    "client_id": "",
+    "client_secret": "",
+    "redirect_uri": "http://127.0.0.1:65010/authorize_callback",
+    "access_token": "",
+    "refresh_token": "",
+    "scope": ["identity", "edit", "privatemessages", "read", "submit"]
+  },
+
   "subreddit": "stevenuniverse",
   "scan_limit": 50,
   "delay_interval": 30,
