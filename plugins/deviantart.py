@@ -48,7 +48,7 @@ class DeviantArtPlugin:
         """
         self.log = logging.getLogger('lapis.da')
         self.regex = re.compile(r'^(.*?\.)?((deviantart\.(com|net))|(fav\.me))$')
-        self.regex_direct = re.compile(r'^(www\.)?(deviantart\.net)$')
+        self.regex_direct = re.compile(r'^((www\.)|(orig.*\.))?(deviantart\.net)$')
         self.useragent = useragent
         self.headers = {'User-Agent': self.useragent}
 
@@ -82,7 +82,13 @@ class DeviantArtPlugin:
                 mime = mimeparse.parse_mime_type(mime_text)
                 if mime[0] == 'image':
                     self.log.debug('DA link is a direct image')
-                    return submission.url
+                    data = {'author': 'An unknown DA author',
+                            'source': submission.url,
+                            'import_urls': [submission.url],
+                            'importer_display':
+                                {'header': 'Mirrored deviantArt image '
+                                           'by an unknown author:\n\n'}}
+                    return data
             if not self.regex.match(urlsplit(submission.url).netloc):
                 return None
             query_url = 'http://backend.deviantart.com/oembed?{}'.format(
