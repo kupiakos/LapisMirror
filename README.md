@@ -5,13 +5,15 @@ LapisMirror is a plugin-based service that imports posted images on a specific s
 exports the images onto a mirroring service, then replies with the mirror links.
 
 Currently, Lapis Mirror imports from the following sites:
-* Tumblr
+* Tumblr (images, photosets, and videos)
 * deviantArt
 * tinypic
 * gyazo
+* i.4cdn.org (4chan image hosting)
 
 It also exports to the following sites:
-* imgur
+* imgur for images
+* vid.me for videos (in addition to a direct link to the video)
 
 Lapis Mirror imports modules from a plugin directory dynamically and loads them.
 I would recommend reading the class documentation in lapis.py to learn more.
