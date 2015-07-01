@@ -48,7 +48,7 @@ class DeviantArtPlugin:
         """
         self.log = logging.getLogger('lapis.da')
         self.regex = re.compile(r'^(.*?\.)?((deviantart\.(com|net))|(fav\.me))$')
-        self.regex_direct = re.compile(r'^(www\.)?(deviantart\.net)$')
+        self.regex_direct = re.compile(r'^((www\.)|(orig.*\.))?(deviantart\.net)$')
         self.useragent = useragent
         self.headers = {'User-Agent': self.useragent}
 
