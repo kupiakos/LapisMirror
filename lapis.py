@@ -33,6 +33,7 @@ import time
 import traceback
 
 import praw
+from mako.template import Template
 
 __author__ = 'kupiakos'
 __version__ = '0.6'
@@ -102,6 +103,8 @@ class LapisLazuli:
     use_oauth = False
     access_information = None
     username = None
+    use_mako = False
+    mako_template = None
 
     def __init__(self, **kwargs):
         """Initialize the Lapis Lazuli Mirroring System.
@@ -281,22 +284,32 @@ class LapisLazuli:
             if not any(export_results):
                 continue
             importer_display = import_info.get('importer_display', {})
-            export_table.append((importer_display, export_results))
+            export_table.append((importer_display, export_results, import_info))
 
         if not any(export_table):
             self.log.warning('Imports done, but no exports.')
             return
 
         links_display_parts = []
-        for importer_display, export_results in export_table:
+        for importer_display, export_results, _ in export_table:
             links_display_parts.append(importer_display.get('header', ''))
             for export_result in export_results:
                 links_display_parts.append(export_result.get('link_display'))
             links_display_parts.append(importer_display.get('footer', ''))
         links_display = ''.join(links_display_parts)
-        text = self.options.get('post_template',
-                                '{links}\n\n---\n^(Lapis Mirror {version})').format(
-            links=links_display, **self.options)
+
+        if self.use_mako:
+            text = self.mako_template.render(
+                submission=submission,
+                links=links_display,
+                links_parts=links_display_parts,
+                import_info=import_info,
+                export_table=export_table,
+                **self.options)
+        else:
+            text = self.options.get('post_template',
+                                    '{links}\n\n---\n^(Lapis Mirror {version})').format(
+                links=links_display, **self.options)
         try:
             submission.add_comment(text)
             self.log.info('Replied comment to %s', submission.permalink)
@@ -363,6 +376,15 @@ class LapisLazuli:
                 raise LapisError('You must define a password!')
         if 'maintainer' not in self.options:
             raise LapisError('You must define a maintainer!')
+        if 'post_template_file' in self.options:
+            if 'post_template' in self.options:
+                raise LapisError('Both a template file and template field were provided!')
+            template_name = os.path.join(get_script_dir(), self.options['post_template_file'])
+            if not os.path.isfile(template_name):
+                raise LapisError('A template file was specified, but the file does not exist!')
+            self.use_mako = True
+            self.mako_template = Template(filename=template_name)
+
         self.options['useragent'] = self.options.get(
             'useragent', '{name}/{version} by {maintainer}'
         ).format(name='LapisMirror', **self.options)
