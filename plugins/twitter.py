@@ -59,21 +59,17 @@ class TwitterPlugin:
             r'https?://twitter.com/(?P<user>\w+?)/status/(?P<id>\d+)/?')
 
     def login(self):
-        """Attempt to log into the Imgur API."""
-        self.log.info('Logging into imgur...')
+        """Attempt to log into the Twitter API."""
+        self.log.info('Logging into Twitter...')
         self.auth = tweepy.OAuthHandler(self.api_key, self.api_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
         self.client = tweepy.API(self.auth)
 
     def import_submission(self, submission: praw.objects.Submission) -> dict:
-        """Import a submission from tinypic. Uses raw HTML scraping.
-
-        Because this downloads the page and tries to scrape the HTML,
-        we are at significant risk of the image ID on the DOM changing.
-        Therefore, this plugin is liable to break.
+        """Import a submission from Twitter. Uses the Twitter API 1.1.
 
         This function will define the following values in its return data:
-        - author: simply "an anonymous Tinypic user"
+        - author: a note containing the Twitter user and their handle
         - source: The url of the submission
         - importer_display/header
         - import_urls
