@@ -224,8 +224,11 @@ class LapisLazuli:
             self.log.debug('Parsing module ' + repr(module))
             plugin = getattr(module, '__plugin__', None)
             if inspect.isclass(plugin):
-                self.log.info('Initializing plugin ' + plugin.__name__)
-                self.plugins.append(plugin(**self.options))
+                self.log.info('Initializing plugin %s', plugin.__name__)
+                try:
+                    self.plugins.append(plugin(**self.options))
+                except Exception:
+                    self.log.warning('Could not initialize plugin %s', plugin.__name__)
 
     def login(self) -> None:
         """Log into required services, like Reddit."""
