@@ -116,16 +116,28 @@ class TumblrPlugin:
                 data['import_urls'] = [video_url]
                 return data
 
+            post = response['response']['posts'][0]
             data['import_urls'] = [photo['original_size']['url']
                                    for photo in
-                                   response['response']['posts'][0].get('photos', [])]
+                                   post.get('photos', [])]
 
             # In the case that the author opts to just do a text post with inline images,
             # we can capture that as well. Sometimes authors do this without even knowing.
             # However, we may capture extraneous images. I've opted to let this happen
             # anyways. [](#su-dealwithit)
             if not data['import_urls']:
-                bs = bs4.BeautifulSoup(response['response']['posts'][0].get('body', ''))
+                if 'body' in post:
+                    html = post['body']
+                elif 'answer' in post:
+                    html = post['answer']
+                    if 'question' in post:
+                        data['importer_display']['header'] += (
+                            'Question:  \n{}\n\n'.format(post['question'])
+                        )
+                else:
+                    self.log.warning('Unknown post format!')
+                    return None
+                bs = bs4.BeautifulSoup(html)
                 data['import_urls'] = [img['src'] for img in bs.select('img')]
                 if not data['import_urls']:
                     self.log.info('Could not find any URLs to import!')
