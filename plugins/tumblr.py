@@ -132,7 +132,7 @@ class TumblrPlugin:
                     html = post['answer']
                     if 'question' in post:
                         data['importer_display']['header'] += (
-                            'Question:  \n{}\n\n'.format(post['question'])
+                            'Question from the post:  \n{}\n\n'.format(post['question'])
                         )
                 else:
                     self.log.warning('Unknown post format!')
