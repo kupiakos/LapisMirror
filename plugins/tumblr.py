@@ -36,7 +36,7 @@ class TumblrPlugin:
 
     Supports single images, multiple images, inline images,
     and GIFs. (with a soft J)
-    Does not support videos yet.
+    Now with video support!
 
     See https://www.tumblr.com/docs/en/api/v2 for information on
     getting Tumblr API keys.
