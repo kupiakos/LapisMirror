@@ -11,6 +11,9 @@ Currently, Lapis Mirror imports from the following sites:
 * gyazo
 * i.4cdn.org (4chan image hosting)
 * Twitter Images
+* Artstation
+* Drawcrowd
+* gifs.com
 
 It also exports to the following sites:
 * imgur for images
