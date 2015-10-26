@@ -83,7 +83,7 @@ class ImgurPlugin:
             return None
         if video:
             return None
-        description = ('This is a mirror uploaded by /u/LapisMirror, '
+        description = ('This is a mirror uploaded by /u/Lapis_Mirror, '
                        'originally made by %s, located at %s' %
                        (author, source))
         results = {'exporter': self.__class__.__name__}
