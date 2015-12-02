@@ -14,6 +14,7 @@ Currently, Lapis Mirror imports from the following sites:
 * Artstation
 * Drawcrowd
 * gifs.com
+* puu.sh
 
 It also exports to the following sites:
 * imgur for images
