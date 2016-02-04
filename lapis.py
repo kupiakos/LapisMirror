@@ -314,8 +314,9 @@ class LapisLazuli:
                                     '{links}\n\n---\n^(Lapis Mirror {version})').format(
                 links=links_display, **self.options)
         try:
-            submission.add_comment(text)
+            comment = submission.add_comment(text)
             self.log.info('Replied comment to %s', submission.permalink)
+            self.sticky_comment(comment)
         except Exception:
             self.log.error('Had an error posting to Reddit! Attempting cleanup:\n%s', traceback.format_exc())
             try:
@@ -354,6 +355,24 @@ class LapisLazuli:
             time.sleep(self.options.get('delay_interval', 30))
             if self.use_oauth:
                 self.oauth_refresh()
+
+    def sticky_comment(self, comment) -> bool:
+        """Attempt to sticky a comment, failing silently.
+
+        :return: Whether the sticky was successful.
+
+        """
+        url = comment.reddit_session.config['distinguish']
+        data = {'id': comment.fullname,
+                'how': 'yes',
+                'sticky': True}
+        try:
+            comment.reddit_session.request_json(url, data=data)
+        except Exception:
+            return False
+
+        self.log.debug('Successfully stickied comment', comment.fullname)
+        return True
 
     def verify_options(self) -> None:
         """Ensure that the provided options supply us with enough information."""
