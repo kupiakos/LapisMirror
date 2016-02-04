@@ -251,7 +251,7 @@ class LapisLazuli:
         self.access_information = {
             'access_token': oauth['access_token'],
             'refresh_token': oauth['refresh_token'],
-            'scope': oauth['scope']
+            'scope': set(oauth['scope'])
         }
         self.oauth_refresh()
         self.username = self.reddit.get_me().name
@@ -320,7 +320,7 @@ class LapisLazuli:
         except Exception:
             self.log.error('Had an error posting to Reddit! Attempting cleanup:\n%s', traceback.format_exc())
             try:
-                for _, export_results in export_table:
+                for _, export_results, _ in export_table:
                     for export_result in export_results:
                         if 'delete_info' in export_result and 'exporter' in export_result:
                             matched = [i for i in self.plugins
@@ -362,16 +362,23 @@ class LapisLazuli:
         :return: Whether the sticky was successful.
 
         """
-        url = comment.reddit_session.config['distinguish']
+        obj = comment.reddit_session
+        if obj.has_scope('modposts'):
+            obj._use_oauth = True
+
+        url = obj.config['distinguish']
         data = {'id': comment.fullname,
                 'how': 'yes',
                 'sticky': True}
+
         try:
-            comment.reddit_session.request_json(url, data=data)
+            obj.request_json(url, data=data)
         except Exception:
             return False
+        finally:
+            obj._use_oauth = False
 
-        self.log.debug('Successfully stickied comment', comment.fullname)
+        self.log.debug('Successfully stickied comment: %s', comment.permalink)
         return True
 
     def verify_options(self) -> None:
