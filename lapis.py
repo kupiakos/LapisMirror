@@ -131,9 +131,11 @@ class LapisLazuli:
                 '%(asctime)s - %(name)-12s - %(levelname)-5s - %(message)s'))
             self.log.addHandler(logfile)
         self.log.info(' --- STARTING LAPIS MIRROR --- ')
-        self.load_plugins()
         self.verify_options()
         self.login()
+        self.load_plugins()
+        self.call_plugin_function('verify_options', self.options)
+        self.call_plugin_function('login')
 
     def call_plugin_function(self, func_name: str, *args, **kwargs) -> list:
         """Call all registered plugins with function <func_name>.
@@ -180,8 +182,8 @@ class LapisLazuli:
                 if hasattr(item, 'context') else '')
             self.log.info('Forwarding a reply from {}:  \n{}'.format(
                 item.author.name, item.body))
-            self.reddit.send_message('kupiakos',
-                                     'Lapis_Mirror forward from {}'.format(item.author.name),
+            self.reddit.send_message(self.options['maintainer'],
+                                     '{} forward from {}'.format(self.username, item.author.name),
                                      response)
         except (AttributeError, praw.errors.PRAWException):
             pass
@@ -241,7 +243,6 @@ class LapisLazuli:
             self.reddit.login(username=self.username,
                               password=self.options['reddit_password'])
         self.sr = self.reddit.get_subreddit(self.options['subreddit'])
-        self.call_plugin_function('login')
 
     def oauth_authorize(self):
         oauth = self.options['reddit_oauth']
@@ -255,6 +256,7 @@ class LapisLazuli:
         }
         self.oauth_refresh()
         self.username = self.reddit.get_me().name
+        self.options['reddit_user'] = self.username
 
     def oauth_refresh(self):
         self.access_information = self.reddit.refresh_access_information(
@@ -417,8 +419,6 @@ class LapisLazuli:
         self.options['useragent'] = self.options.get(
             'useragent', '{name}/{version} by {maintainer}'
         ).format(name='LapisMirror', **self.options)
-
-        self.call_plugin_function('verify_options', self.options)
 
 
 def get_script_dir():

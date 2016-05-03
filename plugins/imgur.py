@@ -38,7 +38,7 @@ class ImgurPlugin:
     client = None
 
     def __init__(self, useragent: str, imgur_app_id: str='',
-                 imgur_app_secret: str='', **options):
+                 imgur_app_secret: str='', reddit_user: str='', **options):
         """Initialize the Imgur export API.
 
         :param useragent: The useragent to use for the Imgur API.
@@ -50,6 +50,7 @@ class ImgurPlugin:
         self.useragent = useragent
         self.app_id = imgur_app_id
         self.app_secret = imgur_app_secret
+        self.username = reddit_user
 
     def login(self):
         """Attempt to log into the Imgur API."""
@@ -83,9 +84,9 @@ class ImgurPlugin:
             return None
         if video:
             return None
-        description = ('This is a mirror uploaded by /u/Lapis_Mirror, '
+        description = ('This is a mirror uploaded by /u/%s, '
                        'originally made by %s, located at %s' %
-                       (author, source))
+                       (self.username, author, source))
         results = {'exporter': self.__class__.__name__}
         config = {}
         album = {}
