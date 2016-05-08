@@ -282,6 +282,7 @@ class LapisLazuli:
             return
         self.log.info('\n\nImported data from submission "%s"', submission.url)
         export_table = []
+        import_info = None
         for import_info in filter(None, import_results):
             self.log.debug('Import info: %s', str(import_results))
             # export_results.append((import_info.get('importer_display', ''),
@@ -299,7 +300,7 @@ class LapisLazuli:
         for importer_display, export_results, _ in export_table:
             links_display_parts.append(importer_display.get('header', ''))
             for export_result in export_results:
-                links_display_parts.append(export_result.get('link_display'))
+                links_display_parts.append(export_result.get('link_display', ''))
             links_display_parts.append(importer_display.get('footer', ''))
         links_display = ''.join(links_display_parts)
 
@@ -348,8 +349,11 @@ class LapisLazuli:
                 for item in self.reddit.get_unread():
                     self.forward_reply(item)
             for submission in self.sr.get_new(limit=self.options.get('scan_limit', 50)):
-                if submission.id not in done:
-                    self.process_submission(submission)
+                try:
+                    if submission.id not in done:
+                        self.process_submission(submission)
+                except Exception:
+                    self.log.error('Ran into error on submission %d' % submission.id)
                 done.append(submission.id)
                 if delay:
                     input()
