@@ -26,6 +26,7 @@ import urllib.error
 import traceback
 
 import imgurpython
+from imgurpython.helpers.error import ImgurClientRateLimitError
 
 
 class ImgurPlugin:
@@ -104,6 +105,9 @@ class ImgurPlugin:
             self.log.debug('An album will be uploaded.')
             try:
                 album = self.client.create_album({'description': description})
+            except ImgurClientRateLimitError:
+                self.log.error('Ran into imgur rate limit!')
+                return None
             except Exception:
                 self.log.error('Could not create album! %s', traceback.format_exc())
                 return None
@@ -123,6 +127,9 @@ class ImgurPlugin:
                     results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
                 else:
                     results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
+            except ImgurClientRateLimitError:
+                self.log.error('Ran into imgur rate limit!')
+                return None
             except Exception:
                 # If we fail, we have to try to clean up what we've already uploaded.
                 self.log.error('Error uploading! Will attempt to delete uploaded images.\n%s',
@@ -136,12 +143,14 @@ class ImgurPlugin:
                     if not self.delete_export(album['deletehash']):
                         self.log.error('Could not delete album %s,%s',
                                        image['id'], image['deletehash'])
+        except ImgurClientRateLimitError:
+            self.log.error('Ran into imgur rate limit!')
+            return None
         except Exception:
             self.log.error('Broken exception catch %s', traceback.format_exc())
             if is_album:
                 self.log.error('Try to delete album!')
                 self.delete_export(album['deletehash'])
-
         return results
 
     @staticmethod
