@@ -304,6 +304,7 @@ class LapisLazuli:
             links_display_parts.append(importer_display.get('footer', ''))
         if not links_display_parts:
             self.log.warning('Exports done, but no links')
+            return
         links_display = ''.join(links_display_parts)
 
         if self.use_mako:
