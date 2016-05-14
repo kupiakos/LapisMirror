@@ -1,1 +1,1 @@
-bot: python3 lapis.py
+lapis: python3 lapis.py
