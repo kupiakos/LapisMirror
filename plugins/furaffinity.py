@@ -50,7 +50,7 @@ class FurAffinityPlugin:
         self.headers = {'User-Agent': useragent}
         self.regex = re.compile(
             r'^https?://('
-            r'((?:www\.)?furaffinity\.net/view/(?P<id>\d+).*)|'
+            r'((?:www\.)?(?:sfw\.)?furaffinity\.net/view/(?P<id>\d+).*)|'
             r'(d\.facdn\.net/art/(?P<artist>[^/]+)/(?P<cdn_id>\d+)/.*)'
             r')$')
 
