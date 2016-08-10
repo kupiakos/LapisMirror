@@ -1,6 +1,7 @@
 beautifulsoup4==4.4.1
 decorator==4.0.9
 imgurpython==1.1.7
+lxml==3.6.1
 Mako==1.0.4
 MarkupSafe==0.23
 mimeparse==0.1.3
