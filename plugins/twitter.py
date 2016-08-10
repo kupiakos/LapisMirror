@@ -56,7 +56,7 @@ class TwitterPlugin:
         self.access_token = twitter_access_token
         self.access_token_secret = twitter_access_token_secret
         self.regex = re.compile(
-            r'https?://twitter.com/(?P<user>\w+?)/status/(?P<id>\d+)/?')
+            r'https?://(mobile\.)?twitter.com/(?P<user>\w+?)/status/(?P<id>\d+)/?')
 
     def login(self):
         """Attempt to log into the Twitter API."""

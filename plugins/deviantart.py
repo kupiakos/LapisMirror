@@ -115,7 +115,7 @@ class DeviantArtPlugin:
 
             try:
                 # Trying to scrape manually
-                bs = BeautifulSoup(self.read_url(submission.url))
+                bs = BeautifulSoup(self.read_url(submission.url), "html.parser")
 
                 # Checking for flash animation, because mirroring a preview
                 # for a flash animation is stupid
