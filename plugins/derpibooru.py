@@ -24,7 +24,7 @@ import html
 import logging
 import re
 import traceback
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 import mimeparse
 import praw
@@ -32,8 +32,7 @@ import requests
 
 
 class DerpibooruPlugin:
-    """
-    Mirrors Derpibooru images.
+    """Mirrors Derpibooru images.
     Created by /u/HeyItsShuga
 
     """
@@ -82,11 +81,9 @@ class DerpibooruPlugin:
             else:
                 self.log.debug('Not CDN, will use API')
                 # If the URL ends with a slash (/), remove it so the API works properly.
-                if url.endswith('/'):
-                    url = url[:-1]
-                # Removes junk data from URL.
-                url, _, _ = url.partition('#')
-                url, _, _ = url.partition('?')
+                url = url.rstrip('/')
+                # Removes query and fragment from URL.
+                urlunsplit(urlsplit(url)[:3] + ('', ''))
                 # Use the JSON API endpoint.
                 endpoint = url + '.json'
                 self.log.debug('Will use API endpoint at ' + endpoint)
