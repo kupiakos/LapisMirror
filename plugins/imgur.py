@@ -58,6 +58,10 @@ class ImgurPlugin:
         self.log.info('Logging into imgur...')
         self.client = imgurpython.ImgurClient(
             self.app_id, self.app_secret)
+        self.log.debug(self.client.credits)
+        if all(i is None for i in self.client.credits.values()):
+            self.log.warning('Client returned no credits!')
+            self.login()
 
     def export_submission(self,
                           import_urls: list,
@@ -91,7 +95,6 @@ class ImgurPlugin:
         results = {'exporter': self.__class__.__name__}
         config = {}
         album = {}
-        image = {}
 
         # Should we do an album?
         if len(import_urls) == 0:
@@ -106,7 +109,7 @@ class ImgurPlugin:
             try:
                 album = self.client.create_album({'description': description})
             except ImgurClientRateLimitError:
-                self.log.error('Ran into imgur rate limit!')
+                self.log.error('Ran into imgur rate limit! %s', self.client.credits)
                 return None
             except Exception:
                 self.log.error('Could not create album! %s', traceback.format_exc())
@@ -117,34 +120,17 @@ class ImgurPlugin:
         try:
             # Try to upload each image given.
             images = []
-            try:
-                for import_url in import_urls:
-                    self.log.debug('Uploading URL "%s" to imgur', import_url)
-                    image = self.client.upload_from_url(import_url, config)
-                    self.log.debug('Uploaded image: %s', str(image))
-                    images.append(image)
-                if is_album:
-                    results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
-                else:
-                    results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
-            except ImgurClientRateLimitError:
-                self.log.error('Ran into imgur rate limit!')
-                return None
-            except Exception:
-                # If we fail, we have to try to clean up what we've already uploaded.
-                self.log.error('Error uploading! Will attempt to delete uploaded images.\n%s',
-                               traceback.format_exc())
-                for image in images:
-                    if not self.delete_export(image['deletehash']):
-                        self.log.error('Could not delete image %s, %s',
-                                       image['url'], image['deletehash'])
-                if is_album:
-                    self.log.error('Deleting album')
-                    if not self.delete_export(album['deletehash']):
-                        self.log.error('Could not delete album %s,%s',
-                                       image['id'], image['deletehash'])
+            for import_url in import_urls:
+                self.log.debug('Uploading URL "%s" to imgur', import_url)
+                image = self.client.upload_from_url(import_url, config)
+                self.log.debug('Uploaded image: %s', str(image))
+                images.append(image)
+            if is_album:
+                results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
+            else:
+                results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
         except ImgurClientRateLimitError:
-            self.log.error('Ran into imgur rate limit!')
+            self.log.error('Ran into imgur rate limit! %s', self.client.credits)
             return None
         except Exception:
             self.log.error('Broken exception catch %s', traceback.format_exc())
