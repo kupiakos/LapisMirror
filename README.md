@@ -18,6 +18,7 @@ Currently, Lapis Mirror imports from the following sites:
 * flickr
 * FurAffinity
 * Derpibooru
+* e621/e926
 
 It also exports to the following sites:
 * imgur for images
