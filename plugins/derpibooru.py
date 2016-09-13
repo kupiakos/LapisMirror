@@ -20,19 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import html
 import logging
 import re
+import html
+from urllib.parse import urlsplit
 import traceback
-from urllib.parse import urlsplit, urlunsplit
 
+import json
+import requests
 import mimeparse
 import praw
-import requests
 
 
 class DerpibooruPlugin:
-    """Mirrors Derpibooru images.
+    """
+    Mirrors Derpibooru images.
     Created by /u/HeyItsShuga
 
     """
@@ -45,7 +47,7 @@ class DerpibooruPlugin:
         """
         self.log = logging.getLogger('lapis.derpibooru')
         self.headers = {'User-Agent': useragent}
-        self.regex = re.compile(r'(www\.)?(derpiboo\.ru)|(derpibooru\.org)|(derpicdn\.net)$')
+        self.regex = re.compile(r'(www\.)?(derpiboo\.ru)|(derpibooru\.org)|(trixiebooru\.org)|(derpicdn\.net)$')
 
     def import_submission(self, submission: praw.objects.Submission) -> dict:
         """Import a submission from Derpibooru.
@@ -71,33 +73,20 @@ class DerpibooruPlugin:
             r = requests.head(url, headers=self.headers)
             mime_text = r.headers.get('Content-Type')
             mime = mimeparse.parse_mime_type(mime_text)
-            if mime[0] == 'image':
-                self.log.debug('Is CDN, no API needed')
-                data = {'author': 'a Derpibooru user',
-                        'source': url,
-                        'importer_display':
-                            {'header': 'Mirrored Derpibooru image:\n\n'}}
-                image_url = url
-            else:
-                self.log.debug('Not CDN, will use API')
-                # If the URL ends with a slash (/), remove it so the API works properly.
-                url = url.rstrip('/')
-                # Removes query and fragment from URL.
-                urlunsplit(urlsplit(url)[:3] + ('', ''))
-                # Use the JSON API endpoint.
-                endpoint = url + '.json'
-                self.log.debug('Will use API endpoint at ' + endpoint)
-                # Use the API endpoint and get the direct image URL to upload.
-                call_api = requests.get(endpoint)
-                json = call_api.json()
-                img = 'http:' + json['image']
-                uploader = json['uploader']
-                data = {'author': 'a Derpibooru user',
-                        'source': url,
-                        'importer_display':
-                            {'header': 'Mirrored Derpibooru image uploaded by ' +
-                                       uploader + ':\n\n'}}
-                image_url = img
+            # if mime[0] == 'image':
+            self.log.debug('Initiating Derpibooru plugin')
+            jsonUrl = 'http://derpiboo.ru/oembed.json?url=' + url  # The API endpoint
+            callapi = requests.get(jsonUrl)  # Fetch the API's JSON file.
+            json = callapi.json()
+            img = 'http:' + (json['thumbnail_url'])
+            author = (json['author_name'])
+            provider_url = (json['provider_url'])
+            data = {'author': author,
+                    'source': img,
+                    'importer_display':
+                        {'header': 'Mirrored [image](' + provider_url + ') by Derpibooru artist \
+                        [' + author + '](https://derpiboo.ru/tags/artist-colon-' + author + '):\n\n'}}
+            image_url = img
             data['import_urls'] = [image_url]
             return data
         except Exception:
