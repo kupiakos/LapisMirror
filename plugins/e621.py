@@ -35,6 +35,7 @@ class E621Plugin:
     """
     Mirrors e621 images using either their API or using their CDN links.
     Created by /u/HeyItsShuga
+
     """
 
     def __init__(self, useragent: str, **options):
@@ -47,7 +48,7 @@ class E621Plugin:
         self.headers = {'User-Agent': useragent}
         self.regex = re.compile(
             r'^https?://(((?:www\.)?(?:static1\.)?'
-            r'(?P<service>(e621)|(e926))\.net/(data/.+/(?P<cdn_id>\w+))?'
+            r'(?P<service>(e621)|(e926))\.net/(data/.+/(?P<md5>\w+))?'
             r'(post/show/(?P<post_id>\d+)/?)?.*))$')
 
     def import_submission(self, submission: praw.objects.Submission) -> dict:
@@ -77,31 +78,35 @@ class E621Plugin:
             mime_text = r.headers.get('Content-Type')
             mime = mimeparse.parse_mime_type(mime_text)
             if mime[0] == 'image':
-                self.log.debug('Using the CDN')
+                md5 = match.group('md5')
                 service = match.group('service')
-                data = {'author': 'a e926 user',
-                        'source': url,
-                        'importer_display':
-                            {'header': 'Mirrored ' + service + ' image:\n\n'}}
-                image_url = url
+                endpoint = 'http://e926.net/post/check_md5.json?md5=' + md5
+                self.log.debug('Will use MD5 checker endpoint at %s', endpoint)
+                callapi = requests.get(endpoint)
+                json = callapi.json()
+                post_id = json['post_id']
+                post_id = str(post_id)
             else:
-                self.log.debug('Using the e621 API')
+                self.log.debug('No CDN used, md5 retrieval not neccesary.')
                 # For non-CDN links, the plugin attempts to get the post_id
                 # out of the URL using regex.
                 post_id = match.group('post_id')
-                service = match.group('service')
-                endpoint = 'http://e621.net/post/show.json?id=' + post_id
-                self.log.debug('Will use API endpoint at %s', endpoint)
-                # We will use the e621 API to get the image URL.
-                callapi = requests.get(endpoint)
-                json = callapi.json()
-                img = json['file_url']
-                uploader = json['author']
-                data = {'author': uploader,
-                        'source': url,
-                        'importer_display':
-                            {'header': 'Mirrored ' + service + ' image by ' + uploader + ':\n\n'}}
-                image_url = img
+            endpoint = 'http://e926.net/post/show.json?id=' + post_id
+            service = match.group('service')
+            self.log.debug('Will use API endpoint at %s', endpoint)
+            # We will use the e621 API to get the image URL.
+            callapi = requests.get(endpoint)
+            json = callapi.json()
+            img = json['file_url']
+            author = json['artist']
+            author = ''.join(author)  # Converts the list into a string to be used later.
+            data = {'author': author,
+                    'source': url,
+                    'importer_display':
+                        {'header': 'Mirrored [image](https://' + service + '.net/post/show/' + post_id + ') \
+                        by ' + service + ' artist [' + author + '](https://' + service + '.net/post/index/1/' + author + '\
+                        ):\n\n'}}
+            image_url = img
             data['import_urls'] = [image_url]
             return data
         except Exception:
