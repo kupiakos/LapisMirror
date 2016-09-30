@@ -75,7 +75,7 @@ class DerpibooruPlugin:
             mime = mimeparse.parse_mime_type(mime_text)
             # if mime[0] == 'image':
             self.log.debug('Initiating Derpibooru plugin')
-            jsonUrl = 'http://derpiboo.ru/oembed.json?url=' + url  # The API endpoint
+            jsonUrl = 'http://derpibooru.org/oembed.json?url=' + url  # The API endpoint
             callapi = requests.get(jsonUrl)  # Fetch the API's JSON file.
             json = callapi.json()
             img = 'http:' + (json['thumbnail_url'])
@@ -85,7 +85,7 @@ class DerpibooruPlugin:
                     'source': img,
                     'importer_display':
                         {'header': 'Mirrored [image](' + provider_url + ') by Derpibooru artist \
-                        [' + author + '](https://derpiboo.ru/tags/artist-colon-' + author + '):\n\n'}}
+                        [' + author + '](https://derpibooru.org/tags/artist-colon-' + author + '):\n\n'}}
             image_url = img
             data['import_urls'] = [image_url]
             return data
