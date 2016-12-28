@@ -1,0 +1,29 @@
+{
+  "logfile": "lapis.log",
+
+  "maintainer": "malachite",
+  "useragent": "{name}/{version} by /u/{maintainer}",
+  "plugins_dir": "plugins",
+
+  "reddit_oauth": {
+    "client_id": "",
+    "client_secret": "",
+    "redirect_uri": "http://127.0.0.1:65010/authorize_callback",
+    "access_token": "",
+    "refresh_token": "",
+    "scope": ["identity", "edit", "privatemessages", "read", "submit"]
+  },
+
+  "forward_replies": true,
+
+  "subreddit": "stevenuniverse",
+  "scan_limit": 50,
+  "delay_interval": 30,
+
+  "imgur_app_id": "",
+  "imgur_app_secret": "",
+  "tumblr_api_key": "",
+
+  "vidme_user": "",
+  "vidme_password": ""
+}
