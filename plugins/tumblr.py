@@ -108,7 +108,10 @@ class TumblrPlugin:
 
             data['author'] = response['response']['blog']['title']
             data['importer_display']['header'] = \
-                'Mirrored post from the tumblr blog "{}":\n\n'.format(data['author'])
+                'Mirrored [post]({post_url}) from the tumblr blog "[{author}]({blog_url})":\n\n'.format(
+                    post_url=submission.url,
+                    blog_url='http://' + blog_name,
+                    author=data['author'])
 
             video_url = response['response']['posts'][0].get('video_url')
             if video_url:
