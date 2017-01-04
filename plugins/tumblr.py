@@ -106,11 +106,24 @@ class TumblrPlugin:
             elif response['meta']['status'] != 200:
                 self.log.error('Non-success status returned')
 
-            data['author'] = response['response']['blog']['title']
-            data['importer_display']['header'] = \
+            try:
+	            source_url = response['response']['posts'][0]['source_url']
+            except KeyError:
+	            source_url = response['response']['posts'][0]['post_url']
+            match = self.regex.match(source_url)
+            if not match:
+                return None
+            source_blog_name, post_id = match.groups()
+            query_url = 'http://api.tumblr.com/v2/blog/{blog_name}/posts?{query}'.format(
+                blog_name=source_blog_name,
+                query=urlencode({'filter': 'raw', 'id': post_id, 'api_key': self.api_key}))
+            source_response = json.loads(self.read_url(query_url))
+            
+            data['author'] = source_response['response']['blog']['title']
+            data['importer_display']['header'] = 
                 'Mirrored [post]({post_url}) from the tumblr blog "[{author}]({blog_url})":\n\n'.format(
-                    post_url=submission.url,
-                    blog_url='http://' + blog_name,
+                    post_url=source_url,
+                    blog_url='http://' + source_blog_name,
                     author=data['author'])
 
             video_url = response['response']['posts'][0].get('video_url')
