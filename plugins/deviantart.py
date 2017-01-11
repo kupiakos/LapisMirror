@@ -110,7 +110,7 @@ class DeviantArtPlugin:
                         {'header': 'Mirrored [deviantArt image]({post_url}) by the [author "{author_name}"]({author_url}):\n\n'.format(
                             post_url=submission.url, 
                             author_name=response['author_name'], 
-                            author_url=response['author.url'])}}
+                            author_url=response['author_url'])}}
             if response['type'] == 'link':
                 data['import_urls'] = [response['fullsize_url']]
                 self.log.debug('Found DA API url %s', data['import_urls'])
