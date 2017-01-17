@@ -128,7 +128,7 @@ class ImgurPlugin:
             if is_album:
                 results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
             else:
-                results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
+                results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https').replace('gif, 'gifv')
         except ImgurClientRateLimitError:
             self.log.error('Ran into imgur rate limit! %s', self.client.credits)
             return None
