@@ -135,7 +135,7 @@ class ImgurPlugin:
                 mime_text = r.headers.get('Content-Type')
                 mime = mimeparse.parse_mime_type(mime_text)
                 if mime[1] == 'gif':
-                    picture_url = re.sub('\.gif|jpg|png', '.gifv', picture_url)
+                    picture_url = re.sub(r'(\.\w+)?$', '.gifv', picture_url)
                 
                 results['link_display'] = '[Imgur](%s)  \n' % picture_url
         except ImgurClientRateLimitError:
