@@ -24,6 +24,7 @@ import logging
 import urllib.request
 import urllib.error
 import traceback
+import mimeparse
 
 import imgurpython
 from imgurpython.helpers.error import ImgurClientRateLimitError
@@ -128,7 +129,14 @@ class ImgurPlugin:
             if is_album:
                 results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
             else:
-                results['link_display'] = '[Imgur](%s)  \n' % images[0]['link'].replace('http', 'https')
+                picture_url = images[0]['link'].replace('http', 'https')
+                r = requests.head(picture_url)
+                mime_text = r.headers.get('Content-Type')
+                mime = mimeparse.parse_mime_type(mime_text)
+                if mime[1] == 'gif':
+                    picture_url = re.sub(r'(\.\w+)?$', '.gifv', picture_url)
+                results['link_display'] = '[Imgur](%s)  \n' % picture_url
+
         except ImgurClientRateLimitError:
             self.log.error('Ran into imgur rate limit! %s', self.client.credits)
             return None
