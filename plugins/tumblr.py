@@ -120,8 +120,7 @@ class TumblrPlugin:
             source_response = json.loads(self.read_url(query_url))
             
             data['author'] = source_response['response']['blog']['title']
-            data['importer_display']['header'] = 
-                'Mirrored [post]({post_url}) from the tumblr blog "[{author}]({blog_url})":\n\n'.format(
+            data['importer_display']['header'] = 'Mirrored [post]({post_url}) from the tumblr blog "[{author}]({blog_url})":\n\n'.format(
                     post_url=source_url,
                     blog_url='http://' + source_blog_name,
                     author=data['author'])
