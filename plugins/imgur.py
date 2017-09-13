@@ -130,7 +130,7 @@ class ImgurPlugin:
             if is_album:
                 results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
             else:
-                picture_url = images[0]['link'].replace('http', 'https')
+                picture_url = images[0]['link'].replace('http://', 'https://')
                 r = requests.head(picture_url)
                 mime_text = r.headers.get('Content-Type')
                 mime = mimeparse.parse_mime_type(mime_text)
@@ -152,7 +152,7 @@ class ImgurPlugin:
     def delete_export(delete_info: str) -> bool:
         """Will delete an export if given the image deletehash"""
         try:
-            urllib.request.urlopen('http://api.imgur.com/2/delete/' + delete_info)
+            urllib.request.urlopen('https://api.imgur.com/2/delete/' + delete_info)
         except urllib.error.URLError:
             return False
         return True
