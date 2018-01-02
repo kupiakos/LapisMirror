@@ -2,4 +2,7 @@ __pycache__/
 .idea/
 lapis.conf
 *.log
-
+.env
+.venv
+venv
+env
