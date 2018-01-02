@@ -22,7 +22,7 @@ Currently, Lapis Mirror imports from the following sites:
 
 It also exports to the following sites:
 * imgur for images
-* vid.me for videos (in addition to a direct link to the video)
+* A direct link to videos (vid.me has dropped support)
 
 Lapis Mirror imports modules from a plugin directory dynamically and loads them.
 I would recommend reading the class documentation in lapis.py to learn more.
