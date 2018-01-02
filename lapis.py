@@ -359,7 +359,7 @@ class LapisLazuli:
                     if submission.id not in done:
                         self.process_submission(submission)
                 except Exception:
-                    self.log.error('Ran into error on submission %d' % submission.id)
+                    self.log.error('Ran into error on submission {}'.format(submission.id))
                 done.append(submission.id)
                 if delay:
                     input()
