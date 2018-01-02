@@ -271,6 +271,9 @@ class LapisLazuli:
                        '        permalink:%s\n'
                        '        url:      %s',
                        submission.permalink, submission.url)
+        if not hasattr(submission, 'comments'):
+            self.log.warning('Submission has no comments, skipping')
+            return
         if any(comment.author.name == self.username
                for comment in submission.comments if comment.author):
             self.log.debug('Have already commented here--moving on.')
